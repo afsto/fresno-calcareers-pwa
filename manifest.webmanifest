@@ -1,0 +1,19 @@
+{
+  "name": "Valley State Jobs",
+  "short_name": "Valley Jobs",
+  "description": "Search California state job postings in the Central Valley",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
+  "icons": [
+    {
+      "src": "./icon-512.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}

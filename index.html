@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Search California state job postings in the Central Valley">
+  <meta name="theme-color" content="#0f172a">
+  <title>Valley State Jobs</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230f172a' width='192' height='192'/><text x='96' y='120' font-size='80' font-weight='bold' fill='%23fff' text-anchor='middle' font-family='system-ui'>VSJ</text></svg>">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
+      overflow-x: hidden;
+    }
+
+    body.light-mode {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      padding: 1rem 1.5rem;
+      text-align: center;
+      border-bottom: 2px solid #1e40af;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    body.light-mode header {
+      background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+      border-bottom-color: #3b82f6;
+      color: #0f172a;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .theme-toggle, .install-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.375rem;
+      background: #1e40af;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .theme-toggle:hover, .install-btn:hover {
+      background: #1e3a8a;
+    }
+
+    body.light-mode .theme-toggle, body.light-mode .install-btn {
+      background: #3b82f6;
+      color: #fff;
+    }
+
+    body.light-mode .theme-toggle:hover, body.light-mode .install-btn:hover {
+      background: #2563eb;
+    }
+
+    .install-btn {
+      display: none;
+    }
+
+    .install-btn.show {
+      display: block;
+    }
+
+    .search-container {
+      padding: 1.5rem;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+    }
+
+    body.light-mode .search-container {
+      background: #f1f5f9;
+      border-bottom-color: #cbd5e1;
+    }
+
+    .search-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .search-input, .county-filter, .work-type-filter {
+      padding: 0.75rem;
+      border: 1px solid #334155;
+      border-radius: 0.375rem;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+    }
+
+    body.light-mode .search-input, body.light-mode .county-filter, body.light-mode .work-type-filter {
+      background: #fff;
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
+
+    .search-input::placeholder {
+      color: #94a3b8;
+    }
+
+    body.light-mode .search-input::placeholder {
+      color: #64748b;
+    }
+
+    .search-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .search-btn, .clear-btn {
+      flex: 1;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 0.375rem;
+      background: #1e40af;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .search-btn:hover {
+      background: #1e3a8a;
+    }
+
+    .clear-btn {
+      background: #64748b;
+    }
+
+    .clear-btn:hover {
+      background: #475569;
+    }
+
+    body.light-mode .search-btn {
+      background: #3b82f6;
+    }
+
+    body.light-mode .search-btn:hover {
+      background: #2563eb;
+    }
+
+    body.light-mode .clear-btn {
+      background: #94a3b8;
+    }
+
+    body.light-mode .clear-btn:hover {
+      background: #64748b;
+    }
+
+    .stats {
+      padding: 1rem 1.5rem;
+      background: #0f172a;
+      font-size: 0.875rem;
+      color: #94a3b8;
+      border-bottom: 1px solid #334155;
+    }
+
+    body.light-mode .stats {
+      background: #f8fafc;
+      color: #64748b;
+      border-bottom-color: #cbd5e1;
+    }
+
+    .jobs-container {
+      padding: 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .job-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+
+    body.light-mode .job-card {
+      background: #fff;
+      border-color: #cbd5e1;
+    }
+
+    .job-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
+      border-color: #1e40af;
+    }
+
+    .job-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #60a5fa;
+      margin-bottom: 0.5rem;
+    }
+
+    body.light-mode .job-title {
+      color: #1e40af;
+    }
+
+    .job-department {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      margin-bottom: 1rem;
+    }
+
+    body.light-mode .job-department {
+      color: #475569;
+    }
+
+    .job-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .meta-label {
+      color: #94a3b8;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    body.light-mode .meta-label {
+      color: #64748b;
+    }
+
+    .meta-value {
+      color: #f1f5f9;
+      font-weight: 600;
+    }
+
+    body.light-mode .meta-value {
+      color: #0f172a;
+    }
+
+    .job-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.375rem 0.75rem;
+      background: #334155;
+      color: #f1f5f9;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    body.light-mode .tag {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .job-footer {
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .job-link {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: #1e40af;
+      color: #fff;
+      border-radius: 0.375rem;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.875rem;
+      transition: background 0.2s;
+    }
+
+    .job-link:hover {
+      background: #1e3a8a;
+    }
+
+    body.light-mode .job-link {
+      background: #3b82f6;
+    }
+
+    body.light-mode .job-link:hover {
+      background: #2563eb;
+    }
+
+    .deadline {
+      font-size: 0.875rem;
+      color: #ef4444;
+    }
+
+    .deadline.soon {
+      color: #f59e0b;
+    }
+
+    body.light-mode .deadline {
+      color: #dc2626;
+    }
+
+    body.light-mode .deadline.soon {
+      color: #d97706;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #94a3b8;
+    }
+
+    body.light-mode .empty-state {
+      color: #64748b;
+    }
+
+    .empty-state h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .last-updated {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 0.5rem;
+    }
+
+    body.light-mode .last-updated {
+      color: #94a3b8;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.25rem;
+      }
+
+      header {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .header-controls {
+        width: 100%;
+      }
+
+      .search-controls {
+        grid-template-columns: 1fr;
+      }
+
+      .job-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .job-footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #94a3b8;
+    }
+
+    body.light-mode .loading {
+      color: #64748b;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid #334155;
+      border-top-color: #1e40af;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    body.light-mode .spinner {
+      border-color: #cbd5e1;
+      border-top-color: #3b82f6;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🏢 Valley State Jobs</h1>
+    <div class="header-controls">
+      <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">🌙</button>
+      <button class="install-btn" id="installBtn" title="Install as app">⬇️ Install</button>
+    </div>
+  </header>
+
+  <div class="search-container">
+    <div class="search-controls">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search by title or department...">
+      <select id="countyFilter" class="county-filter">
+        <option value="">All Counties</option>
+        <option value="Fresno County">Fresno County</option>
+        <option value="Madera County">Madera County</option>
+        <option value="Kings County">Kings County</option>
+        <option value="Tulare County">Tulare County</option>
+        <option value="Merced County">Merced County</option>
+      </select>
+      <select id="workTypeFilter" class="work-type-filter">
+        <option value="">All Work Types</option>
+        <option value="Permanent">Permanent</option>
+        <option value="Temporary">Temporary</option>
+        <option value="Contract">Contract</option>
+      </select>
+      <select id="teleworkFilter" class="work-type-filter" style="grid-column: auto;">
+        <option value="">All Telework</option>
+        <option value="Telework">Telework</option>
+        <option value="Hybrid">Hybrid</option>
+        <option value="In-Office">In-Office</option>
+      </select>
+    </div>
+    <div class="search-buttons">
+      <button class="search-btn" id="searchBtn">🔍 Search</button>
+      <button class="clear-btn" id="clearBtn">✕ Clear</button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats">
+    Loading jobs...
+  </div>
+
+  <div class="jobs-container" id="jobsContainer">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Loading jobs...</p>
+    </div>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(console.error);
+    }
+
+    const JOBS_DATA_URL = './data/jobs.json';
+    let allJobs = [];
+    let filteredJobs = [];
+    let deferredPrompt = null;
+
+    const searchInput = document.getElementById('searchInput');
+    const countyFilter = document.getElementById('countyFilter');
+    const workTypeFilter = document.getElementById('workTypeFilter');
+    const teleworkFilter = document.getElementById('teleworkFilter');
+    const searchBtn = document.getElementById('searchBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const jobsContainer = document.getElementById('jobsContainer');
+    const statsDiv = document.getElementById('stats');
+    const themeToggle = document.getElementById('themeToggle');
+    const installBtn = document.getElementById('installBtn');
+
+    // Theme management
+    function initTheme() {
+      const saved = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = saved ? saved === 'dark' : prefersDark;
+      if (!isDark) {
+        document.body.classList.add('light-mode');
+        themeToggle.textContent = '☀️';
+      }
+    }
+
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('light-mode');
+      const isDark = !document.body.classList.contains('light-mode');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      themeToggle.textContent = isDark ? '🌙' : '☀️';
+    });
+
+    // Install PWA
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.classList.add('show');
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installBtn.classList.remove('show');
+      }
+    });
+
+    async function loadJobs() {
+      try {
+        const response = await fetch(JOBS_DATA_URL);
+        const data = await response.json();
+        allJobs = data.jobs || [];
+        filteredJobs = [...allJobs];
+        renderJobs();
+        updateStats();
+      } catch (error) {
+        jobsContainer.innerHTML = `<div class="empty-state"><h2>Error loading jobs</h2><p>${error.message}</p></div>`;
+      }
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr || dateStr === 'Until Filled') return dateStr;
+      try {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+      } catch {
+        return dateStr;
+      }
+    }
+
+    function getDaysUntilDeadline(dateStr) {
+      if (!dateStr || dateStr === 'Until Filled') return null;
+      try {
+        const deadline = new Date(dateStr);
+        const today = new Date();
+        const daysLeft = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+        return daysLeft;
+      } catch {
+        return null;
+      }
+    }
+
+    function filterJobs() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const county = countyFilter.value;
+      const workType = workTypeFilter.value;
+      const telework = teleworkFilter.value;
+
+      filteredJobs = allJobs.filter((job) => {
+        const matchSearch = !searchTerm || 
+          job.title.toLowerCase().includes(searchTerm) ||
+          job.department.toLowerCase().includes(searchTerm) ||
+          job.classification.toLowerCase().includes(searchTerm);
+
+        const matchCounty = !county || (job.counties && job.counties.includes(county));
+        const matchWorkType = !workType || (job.work_type && job.work_type.includes(workType));
+        const matchTelework = !telework || job.telework === telework;
+
+        return matchSearch && matchCounty && matchWorkType && matchTelework;
+      });
+
+      renderJobs();
+      updateStats();
+    }
+
+    function renderJobs() {
+      if (filteredJobs.length === 0) {
+        jobsContainer.innerHTML = '<div class="empty-state"><h2>No jobs found</h2><p>Try adjusting your filters.</p></div>';
+        return;
+      }
+
+      jobsContainer.innerHTML = filteredJobs.map((job) => {
+        const daysLeft = getDaysUntilDeadline(job.filing_deadline);
+        const deadlineClass = daysLeft !== null && daysLeft <= 7 ? 'soon' : '';
+
+        return `
+          <div class="job-card">
+            <h3 class="job-title">${escapeHtml(job.title)}</h3>
+            <p class="job-department">${escapeHtml(job.department)}</p>
+            <div class="job-meta">
+              <div class="meta-item">
+                <span class="meta-label">Salary</span>
+                <span class="meta-value">${escapeHtml(job.salary)}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Work Type</span>
+                <span class="meta-value">${escapeHtml(job.work_type)}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Telework</span>
+                <span class="meta-value">${escapeHtml(job.telework)}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Deadline</span>
+                <span class="meta-value deadline ${deadlineClass}">${escapeHtml(formatDate(job.filing_deadline))}</span>
+              </div>
+            </div>
+            <div class="job-tags">
+              ${(job.counties || []).map((c) => `<span class="tag">${escapeHtml(c)}</span>`).join('')}
+            </div>
+            <div class="job-footer">
+              <a href="${escapeHtml(job.url)}" target="_blank" class="job-link">View on CalCareers →</a>
+              <span class="last-updated">ID: ${escapeHtml(job.jc_id)}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateStats() {
+      const total = allJobs.length;
+      const showing = filteredJobs.length;
+      const lastUpdated = new Date().toLocaleDateString();
+      statsDiv.innerHTML = `Showing ${showing} of ${total} jobs | Last updated: ${lastUpdated}`;
+    }
+
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, (m) => map[m]);
+    }
+
+    // Event listeners
+    searchBtn.addEventListener('click', filterJobs);
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      countyFilter.value = '';
+      workTypeFilter.value = '';
+      teleworkFilter.value = '';
+      filteredJobs = [...allJobs];
+      renderJobs();
+      updateStats();
+    });
+
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') filterJobs();
+    });
+
+    countyFilter.addEventListener('change', filterJobs);
+    workTypeFilter.addEventListener('change', filterJobs);
+    teleworkFilter.addEventListener('change', filterJobs);
+
+    // Initialize
+    initTheme();
+    loadJobs();
+  </script>
+</body>
+</html>
