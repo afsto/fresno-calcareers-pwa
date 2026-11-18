@@ -37,8 +37,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to jobs.json"
           else
-            git commit -m "chore: update job listings from CalCareers
-
-Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+            git commit -m "chore: update job listings from CalCareers" -m "Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
             git push
           fi
